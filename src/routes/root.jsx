@@ -1,40 +1,96 @@
-import { Container, Nav, Navbar } from "react-bootstrap";
-import { Outlet, NavLink } from "react-router-dom";
-import logo from "../img/logo.png";
+import { useState } from 'react'
+import { Outlet, NavLink, useLocation, Link } from 'react-router-dom'
+import {
+    MDBTypography,
+    MDBContainer,
+    MDBCollapse,
+    MDBNavbarToggler,
+    MDBNavbarItem,
+    MDBNavbarNav,
+    MDBIcon,
+    MDBNavbar,
+    MDBNavbarBrand,
+} from 'mdb-react-ui-kit'
 
 const Root = () => {
-  return (
-    <>
-      <Navbar expand="lg" className="bg-body-tertiary">
-        <Container>
-          <Navbar.Brand className="navbar-brand">
-            <NavLink to="/">
-              <img
-                width="45"
-                height="45"
-                className="d-inline-block align-top"
-                src={logo}
-                alt="Home"
-              />
-            </NavLink>
-          </Navbar.Brand>
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
-              <NavLink to="/map" className="nav-link">
-                Карта
-              </NavLink>
-              <NavLink to="/heroes" className="nav-link">
-                Герои
-              </NavLink>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-      <Container>
-        <Outlet />
-      </Container>
-    </>
-  );
-};
+    const [openNav, setOpenNav] = useState(false)
 
-export default Root;
+    return (
+        <div style={{ height: '100vh' }}>
+            {useLocation().pathname === '/' ? (
+                <MDBContainer
+                    className="d-flex align-items-center justify-content-center"
+                    style={{ height: '100%' }}
+                >
+                    <NavLink
+                        to="/krasnoe-bedstvie"
+                        className="nav-link hover-shadow nav-card "
+                    >
+                        <div className="bg-image">
+                            <img
+                                src="/images/HIJyR8H7a2Q.jpg"
+                                className="img-fluid"
+                                alt="Красное бедствие"
+                            />
+                            <div className="mask custom-mask">
+                                <div className="d-flex justify-content-center align-items-center h-100">
+                                    <MDBTypography
+                                        tag="h3"
+                                        className="text-center m-2 text-white "
+                                    >
+                                        Красное бедствие
+                                    </MDBTypography>
+                                </div>
+                            </div>
+                        </div>
+                    </NavLink>
+                </MDBContainer>
+            ) : (
+                <div>
+                    <MDBNavbar expand="lg" light bgColor="light">
+                        <MDBContainer fluid>
+                            <MDBNavbarBrand tag={Link} to="/">
+                                <i className="fas fa-house"></i>
+                            </MDBNavbarBrand>
+                            <MDBNavbarToggler
+                                type="button"
+                                aria-expanded="false"
+                                aria-label="Toggle navigation"
+                                onClick={() => setOpenNav(!openNav)}
+                            >
+                                <MDBIcon icon="bars" fas />
+                            </MDBNavbarToggler>
+                            <MDBCollapse
+                                navbar
+                                open={openNav}
+                                className="me-auto mb-2 mb-lg-0"
+                            >
+                                <MDBNavbarNav>
+                                    <MDBNavbarItem>
+                                        <NavLink
+                                            to="/krasnoe-bedstvie"
+                                            className="nav-link"
+                                        >
+                                            Красное бедствие
+                                        </NavLink>
+                                    </MDBNavbarItem>
+                                    <MDBNavbarItem>
+                                        <NavLink
+                                            to="/vzvod"
+                                            className="nav-link"
+                                        >
+                                            Мрачный взвод
+                                        </NavLink>
+                                    </MDBNavbarItem>
+                                </MDBNavbarNav>
+                            </MDBCollapse>
+                        </MDBContainer>
+                    </MDBNavbar>
+                    <Outlet />
+                </div>
+            )}
+        </div>
+    )
+}
+
+export default Root
