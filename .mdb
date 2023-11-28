@@ -1,0 +1,8 @@
+{
+  "projectName": "interactive-map",
+  "meta": {
+    "type": "frontend"
+  },
+  "packageManager": "npm",
+  "hash": "6163b4a0"
+}

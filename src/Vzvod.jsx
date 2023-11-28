@@ -1,5 +1,15 @@
+import { Helmet, HelmetProvider } from 'react-helmet-async'
+
 const Vzvod = () => {
-    ;<div></div>
+    return (
+        <HelmetProvider>
+            <div>
+                <Helmet>
+                    <title>Мрачный взвод | Интерактивная карта</title>
+                </Helmet>
+            </div>
+        </HelmetProvider>
+    )
 }
 
 export default Vzvod

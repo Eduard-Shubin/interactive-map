@@ -7,18 +7,17 @@ import {
     MDBSwitch,
 } from 'mdb-react-ui-kit'
 import L from 'leaflet'
+import { useDispatch } from 'react-redux'
+import uuid from 'react-uuid'
 
 import NewMarker from './NewMarker'
+import ImagesUpload from './ImagesUpload'
+import { addMarker } from '../features/marker/markerSlice'
 
-const Controls = ({
-    setMarkers,
-    markers,
-    markerIcon,
-    admin,
-    handleSwitchChange,
-}) => {
+const Controls = ({ markerIcon, mapEdit, handleSwitchChange, admin }) => {
     const containerRef = useRef(null)
     const fileInputRef = useRef(null)
+    const dispatch = useDispatch()
 
     useEffect(() => {
         if (containerRef.current) {
@@ -27,13 +26,15 @@ const Controls = ({
         }
     }, [])
 
-    const [position, setPosition] = useState(null)
-    const [markerName, setMarkerName] = useState('')
-    const [markerDescription, setMarkerDescription] = useState('')
-    const [markerImage, setMarkerImage] = useState([])
+    const [newPosition, setNewPosition] = useState(null)
+    const [newMarkerName, setNewMarkerName] = useState('')
+    const [newMarkerDescription, setNewMarkerDescription] = useState('')
+    const [newMarkerImage, setNewMarkerImage] = useState(null)
     const [validated, setValidated] = useState(false)
     const [error, setError] = useState('')
+    const [imageError, setImageError] = useState(true)
 
+    //Add marker handle function
     const handleAddMarker = (event) => {
         event.preventDefault()
         setValidated(true)
@@ -42,23 +43,28 @@ const Controls = ({
             return
         }
 
-        if (!position) {
+        if (!newPosition) {
+            return
+        }
+
+        if (imageError) {
             return
         }
 
         const newMarker = {
-            name: markerName,
-            description: markerDescription,
-            img: markerImage,
-            position,
+            id: uuid(),
+            name: newMarkerName,
+            description: newMarkerDescription,
+            img: newMarkerImage.map((img) => `images/${img.name}`),
+            position: newPosition,
         }
 
-        console.log(newMarker)
-        setMarkers([...markers, newMarker])
+        dispatch(addMarker(newMarker))
 
-        setMarkerName('')
-        setMarkerDescription('')
-        setMarkerImage(null)
+        setNewMarkerName('')
+        setNewMarkerDescription('')
+        setNewMarkerImage(null)
+        setNewPosition(null)
         setValidated(false)
         setError('')
 
@@ -67,29 +73,35 @@ const Controls = ({
         }
     }
     useEffect(() => {
-        if (!position) {
+        if (!newPosition) {
             setError('Пожалуйста, установите маркер')
         } else {
             setError('')
         }
-    }, [position])
+    }, [newPosition])
+
+    useEffect(() => {
+        if (!(newMarkerImage && !(newMarkerImage.length === 0))) {
+            setImageError(true)
+        } else {
+            setImageError(false)
+        }
+    }, [newMarkerImage])
 
     return (
         <div>
-            {admin ? (
+            {mapEdit ? (
                 <NewMarker
-                    position={position}
-                    setPosition={setPosition}
+                    newPosition={newPosition}
+                    setNewPosition={setNewPosition}
                     markerIcon={markerIcon}
-                    markerName={markerName}
-                    markerDescription={markerDescription}
+                    newMarkerName={newMarkerName}
+                    newMarkerDescription={newMarkerDescription}
+                    newMarkerImg={newMarkerImage}
                 />
             ) : null}
             <div className="leaflet-top leaflet-right" ref={containerRef}>
-                <div
-                    className="leaflet-control leaflet-bar"
-                    style={{ position: 'relative' }}
-                >
+                <div className="leaflet-control leaflet-bar control-switch">
                     <div
                         style={{
                             position: 'absolute',
@@ -99,20 +111,21 @@ const Controls = ({
                     >
                         <MDBSwitch
                             id="adminSwitch"
-                            checked={admin}
+                            checked={mapEdit}
                             onChange={handleSwitchChange}
                         />
                     </div>
-                    {admin ? (
+                    {mapEdit ? (
                         <MDBPopover
                             color="secondary"
                             btnChildren="Добавить маркер"
                             placement="bottom"
-                            className="mt-2 control-box"
-                            style={{
-                                position: 'absolute',
-                                top: '40px',
-                                right: '10px',
+                            className="mt-2"
+                            btnClassName="control-btn mt-2"
+                            poperStyle={{
+                                width: '350px',
+                                maxHeight: '800px',
+                                overflowY: 'auto',
                             }}
                         >
                             <MDBPopoverHeader>Добавить маркер</MDBPopoverHeader>
@@ -125,16 +138,16 @@ const Controls = ({
                                     >
                                         <Form.Group
                                             className="mb-3"
-                                            controlId="markerName"
+                                            controlId="newMarkerName"
                                         >
                                             <Form.Label>
                                                 Название маркера
                                             </Form.Label>
                                             <Form.Control
                                                 type="text"
-                                                value={markerName}
+                                                value={newMarkerName}
                                                 onChange={(e) =>
-                                                    setMarkerName(
+                                                    setNewMarkerName(
                                                         e.target.value
                                                     )
                                                 }
@@ -147,15 +160,15 @@ const Controls = ({
                                         </Form.Group>
                                         <Form.Group
                                             className="mb-3"
-                                            controlId="markerDescription"
+                                            controlId="newMarkerDescription"
                                         >
                                             <Form.Label>Описание</Form.Label>
                                             <Form.Control
                                                 as="textarea"
                                                 rows={3}
-                                                value={markerDescription}
+                                                value={newMarkerDescription}
                                                 onChange={(e) =>
-                                                    setMarkerDescription(
+                                                    setNewMarkerDescription(
                                                         e.target.value
                                                     )
                                                 }
@@ -168,40 +181,24 @@ const Controls = ({
                                         </Form.Group>
                                         <Form.Group
                                             className="mb-3"
-                                            controlId="markerImage"
+                                            controlId="newMarkerImage"
                                         >
                                             <Form.Label>
                                                 Загрузить картинку
                                             </Form.Label>
-                                            <Form.Control
-                                                type="file"
-                                                ref={fileInputRef}
-                                                onChange={(e) => {
-                                                    setMarkerImage(() => {
-                                                        const fileNames = []
-                                                        for (
-                                                            let i = 0;
-                                                            i <
-                                                            e.target.files
-                                                                .length;
-                                                            i++
-                                                        ) {
-                                                            fileNames.push(
-                                                                e.target.files[
-                                                                    i
-                                                                ].name
-                                                            )
-                                                        }
-                                                        return fileNames
-                                                    })
-                                                }}
-                                                required
-                                                multiple
+                                            <ImagesUpload
+                                                images={newMarkerImage}
+                                                setImages={setNewMarkerImage}
                                             />
-                                            <Form.Control.Feedback type="invalid">
-                                                Пожалуйста, загрузите
-                                                изображение.
-                                            </Form.Control.Feedback>
+                                            {imageError && (
+                                                <Alert
+                                                    variant="danger"
+                                                    className="mt-2"
+                                                >
+                                                    Пожалуйста, загрузите
+                                                    изображение.
+                                                </Alert>
+                                            )}
                                         </Form.Group>
                                         {error && (
                                             <Alert variant="danger">

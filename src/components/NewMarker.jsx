@@ -1,25 +1,83 @@
 import { Marker, Popup, useMapEvents } from 'react-leaflet'
+import {
+    MDBCarousel,
+    MDBCarouselItem,
+    MDBContainer,
+    MDBTypography,
+} from 'mdb-react-ui-kit'
+import uuid from 'react-uuid'
 
 const NewMarker = ({
-    position,
-    setPosition,
+    newPosition,
+    setNewPosition,
     markerIcon,
-    markerName,
-    markerDescription,
+    newMarkerName,
+    newMarkerDescription,
+    newMarkerImg,
 }) => {
     useMapEvents({
         click(e) {
             const { lat, lng } = e.latlng
-            setPosition([lat, lng])
+            setNewPosition([lat, lng])
         },
     })
 
-    return position ? (
-        <Marker position={position} icon={markerIcon}>
+    return newPosition ? (
+        <Marker position={newPosition} icon={markerIcon}>
             <Popup className="marker-popup">
-                <p>{markerName}</p>
-                <br />
-                <p>{markerDescription}</p>
+                <MDBContainer className="d-block justify-content-center p-0 new-marker-popup">
+                    <MDBTypography
+                        tag="h3"
+                        className={`text-center m-2 ${
+                            newMarkerName ? '' : 'text-placeholder'
+                        }`}
+                    >
+                        {newMarkerName ? newMarkerName : 'Название'}
+                    </MDBTypography>
+
+                    <hr className="hr hr-blurry mt-1 mb-2" />
+
+                    {newMarkerImg && newMarkerImg.length > 0 ? (
+                        newMarkerImg.length > 1 ? (
+                            <MDBCarousel showControls>
+                                {newMarkerImg.map((img, index) => {
+                                    return (
+                                        <MDBCarouselItem
+                                            itemId={index + 1}
+                                            key={uuid()}
+                                        >
+                                            <img
+                                                src={img.data_url}
+                                                className="img-fluid"
+                                                alt="..."
+                                            />
+                                        </MDBCarouselItem>
+                                    )
+                                })}
+                            </MDBCarousel>
+                        ) : (
+                            <img
+                                src={
+                                    newMarkerImg ? newMarkerImg[0].data_url : ''
+                                }
+                                className="img-fluid"
+                                alt="..."
+                            />
+                        )
+                    ) : (
+                        <div className="grey-box-placeholder" />
+                    )}
+                    <MDBContainer
+                        fluid
+                        className={`mt-2 mb-2 pr-1 pl-1 ${
+                            newMarkerDescription ? '' : 'text-placeholder'
+                        }`}
+                    >
+                        {newMarkerDescription
+                            ? newMarkerDescription
+                            : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'}
+                    </MDBContainer>
+                </MDBContainer>
             </Popup>
         </Marker>
     ) : null
