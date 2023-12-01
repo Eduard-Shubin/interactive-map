@@ -5,21 +5,31 @@ import {
     MDBContainer,
     MDBTypography,
 } from 'mdb-react-ui-kit'
+import L from 'leaflet'
 import uuid from 'react-uuid'
+
+import './markerColor.css'
 
 const NewMarker = ({
     newPosition,
     setNewPosition,
-    markerIcon,
+    newMarkerIcon,
     newMarkerName,
     newMarkerDescription,
     newMarkerImg,
+    color,
 }) => {
     useMapEvents({
         click(e) {
             const { lat, lng } = e.latlng
             setNewPosition([lat, lng])
         },
+    })
+
+    const markerIcon = L.icon({
+        iconUrl: `images/icons/${newMarkerIcon}.svg`,
+        iconSize: [32, 32],
+        className: `marker-color--${color}`,
     })
 
     return newPosition ? (

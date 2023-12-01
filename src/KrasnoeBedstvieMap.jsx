@@ -1,6 +1,5 @@
 import { MapContainer, ImageOverlay, useMap } from 'react-leaflet'
 import { useState } from 'react'
-import L from 'leaflet'
 import { Helmet, HelmetProvider } from 'react-helmet-async'
 
 import customImage from './img/FOKAS2k.png'
@@ -17,13 +16,6 @@ const KrasnoeBedstvieMap = () => {
     const admin = true // Temporary variable
 
     const [mapEdit, setMapEdit] = useState(true)
-
-    const markerIcon = new L.DivIcon({
-        className: 'custom-icon',
-        html: '<img src="images/icons/circle-fill.svg" alt="Marker icon" class="marker-icon"/>',
-        iconSize: [32, 32],
-        iconAnchor: [9, 10],
-    })
 
     const bounds = [
         [0, 0],
@@ -50,11 +42,10 @@ const KrasnoeBedstvieMap = () => {
                     scrollWheelZoom={true}
                 >
                     <ImageOverlay url={customImage} bounds={bounds} />
-                    <MarkersRender markerIcon={markerIcon} mapEdit={mapEdit} />
+                    <MarkersRender mapEdit={mapEdit} />
 
                     {admin ? (
                         <Controls
-                            markerIcon={markerIcon}
                             mapEdit={mapEdit}
                             handleSwitchChange={handleSwitchChange}
                         />

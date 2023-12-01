@@ -6,6 +6,7 @@ export const counterSlice = createSlice({
         {
             id: 'He81RhuacwfotrWk7tS7y',
             name: 'Кингури',
+            icon: 'location_on_black_24dp',
             description:
                 'Древний восточный город, утопающий в атмосфере таинственности и богатства. Расположенный посреди живописных пустынь и оазисов, город известен своими изысканными дворцами, покрытыми узорчатыми коврами и украшенными золотом и драгоценными камнями.',
             img: ['images/sErZPQPDZEo.jpg'],
@@ -14,6 +15,7 @@ export const counterSlice = createSlice({
         {
             id: 'tC6CTEqytY53kuTBlyLkR',
             name: 'Two',
+            icon: 'location_on_black_24dp',
             description: 'Two descr',
             img: ['images/QEXGBQpgXYw.jpg'],
             position: [1, 10],
@@ -21,6 +23,7 @@ export const counterSlice = createSlice({
         {
             id: 'yOQkxEe_4vLBs3TSzKEjW',
             name: 'three',
+            icon: 'location_on_black_24dp',
             description: 'three descr',
             img: [
                 'images/HIJyR8H7a2Q.jpg',
@@ -51,5 +54,7 @@ export const counterSlice = createSlice({
 })
 
 export const { updateMarker, addMarker, deleteMarker } = counterSlice.actions
+
+export const selectAllMarkers = (state) => state.marker
 
 export default counterSlice.reducer

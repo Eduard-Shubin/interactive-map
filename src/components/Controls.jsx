@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Form, Button, Container, Alert } from 'react-bootstrap'
 import {
+    MDBContainer,
     MDBPopover,
     MDBPopoverBody,
     MDBPopoverHeader,
@@ -9,12 +10,15 @@ import {
 import L from 'leaflet'
 import { useDispatch } from 'react-redux'
 import uuid from 'react-uuid'
+import axios from 'axios'
 
 import NewMarker from './NewMarker'
 import ImagesUpload from './ImagesUpload'
 import { addMarker } from '../features/marker/markerSlice'
+import MarkerIcon from './MarkerIcon'
+import MarkerColorOptions from './MarkerColorOptions'
 
-const Controls = ({ markerIcon, mapEdit, handleSwitchChange, admin }) => {
+const Controls = ({ mapEdit, handleSwitchChange, admin }) => {
     const containerRef = useRef(null)
     const fileInputRef = useRef(null)
     const dispatch = useDispatch()
@@ -33,6 +37,8 @@ const Controls = ({ markerIcon, mapEdit, handleSwitchChange, admin }) => {
     const [validated, setValidated] = useState(false)
     const [error, setError] = useState('')
     const [imageError, setImageError] = useState(true)
+    const [newMarkerIcon, setNewMarkerIcon] = useState('location_on_black_24dp')
+    const [color, setColor] = useState('black')
 
     //Add marker handle function
     const handleAddMarker = (event) => {
@@ -54,6 +60,7 @@ const Controls = ({ markerIcon, mapEdit, handleSwitchChange, admin }) => {
         const newMarker = {
             id: uuid(),
             name: newMarkerName,
+            icon: newMarkerIcon,
             description: newMarkerDescription,
             img: newMarkerImage.map((img) => `images/${img.name}`),
             position: newPosition,
@@ -64,6 +71,7 @@ const Controls = ({ markerIcon, mapEdit, handleSwitchChange, admin }) => {
         setNewMarkerName('')
         setNewMarkerDescription('')
         setNewMarkerImage(null)
+        setNewMarkerIcon('map-pin')
         setNewPosition(null)
         setValidated(false)
         setError('')
@@ -72,6 +80,7 @@ const Controls = ({ markerIcon, mapEdit, handleSwitchChange, admin }) => {
             fileInputRef.current.value = ''
         }
     }
+
     useEffect(() => {
         if (!newPosition) {
             setError('Пожалуйста, установите маркер')
@@ -88,16 +97,34 @@ const Controls = ({ markerIcon, mapEdit, handleSwitchChange, admin }) => {
         }
     }, [newMarkerImage])
 
+    useEffect(() => {
+        const fetchMarkers = async () => {
+            try {
+                const response = await axios.get(
+                    'http://localhost:3001/markers'
+                ) // Поменяйте URL на ваш сервер
+
+                // Данные приходят в response.data
+                console.log(response.data)
+            } catch (error) {
+                console.error('Ошибка при получении маркеров:', error)
+            }
+        }
+
+        fetchMarkers()
+    }, [])
+
     return (
         <div>
             {mapEdit ? (
                 <NewMarker
                     newPosition={newPosition}
                     setNewPosition={setNewPosition}
-                    markerIcon={markerIcon}
+                    newMarkerIcon={newMarkerIcon}
                     newMarkerName={newMarkerName}
                     newMarkerDescription={newMarkerDescription}
                     newMarkerImg={newMarkerImage}
+                    color={color}
                 />
             ) : null}
             <div className="leaflet-top leaflet-right" ref={containerRef}>
@@ -136,6 +163,30 @@ const Controls = ({ markerIcon, mapEdit, handleSwitchChange, admin }) => {
                                         validated={validated}
                                         onSubmit={handleAddMarker}
                                     >
+                                        <Form.Group
+                                            className="mb-3"
+                                            controlId="newMarkerName"
+                                        >
+                                            <Form.Label>
+                                                Иконка маркера
+                                            </Form.Label>
+                                            <MDBContainer className="d-flex justify-content-center">
+                                                <MarkerIcon
+                                                    setNewMarkerIcon={
+                                                        setNewMarkerIcon
+                                                    }
+                                                    newMarkerIcon={
+                                                        newMarkerIcon
+                                                    }
+                                                    color={color}
+                                                />
+                                            </MDBContainer>
+                                            <MarkerColorOptions
+                                                color={color}
+                                                setColor={setColor}
+                                            />
+                                        </Form.Group>
+
                                         <Form.Group
                                             className="mb-3"
                                             controlId="newMarkerName"
