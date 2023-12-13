@@ -8,7 +8,7 @@ import {
 import L from 'leaflet'
 import uuid from 'react-uuid'
 
-import './markerColor.css'
+import '../MarkerColorOptions/markerColor.css'
 
 const NewMarker = ({
     newPosition,

@@ -1,60 +1,189 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import axios from 'axios'
 
-export const counterSlice = createSlice({
-    name: 'marker',
-    initialState: [
-        {
-            id: 'He81RhuacwfotrWk7tS7y',
-            name: 'Кингури',
-            icon: 'location_on_black_24dp',
-            description:
-                'Древний восточный город, утопающий в атмосфере таинственности и богатства. Расположенный посреди живописных пустынь и оазисов, город известен своими изысканными дворцами, покрытыми узорчатыми коврами и украшенными золотом и драгоценными камнями.',
-            img: ['images/sErZPQPDZEo.jpg'],
-            position: [1, 8],
-        },
-        {
-            id: 'tC6CTEqytY53kuTBlyLkR',
-            name: 'Two',
-            icon: 'location_on_black_24dp',
-            description: 'Two descr',
-            img: ['images/QEXGBQpgXYw.jpg'],
-            position: [1, 10],
-        },
-        {
-            id: 'yOQkxEe_4vLBs3TSzKEjW',
-            name: 'three',
-            icon: 'location_on_black_24dp',
-            description: 'three descr',
-            img: [
-                'images/HIJyR8H7a2Q.jpg',
-                'images/gdywmtFwgdU.jpg',
-                'images/7HkDg5Vu-GQ.jpg',
-            ],
-            position: [1, 12],
-        },
-    ],
-    reducers: {
-        updateMarker: (state, action) => {
-            const { id, name, description, img } = action.payload
-            const existingMarker = state.find((marker) => marker.id === id)
-            if (existingMarker) {
-                existingMarker.name = name
-                existingMarker.description = description
-                existingMarker.img = img
+export const fetchMarkers = createAsyncThunk(
+    'markers/fetchMarkers',
+    async (location) => {
+        const response = await axios.get(
+            `http://localhost:3001/markers/${location}`
+        )
+
+        return response.data
+    }
+)
+
+export const addNewMarker = createAsyncThunk(
+    'markers/addNewMarker',
+    async (newMarker) => {
+        const formData = new FormData()
+
+        newMarker.images.forEach((img, index) => {
+            formData.append(`image[${index}]`, img.file, img.file.name)
+        })
+
+        // Добавляем данные в FormData
+        formData.append('id', newMarker.id)
+        formData.append('name', newMarker.name)
+        formData.append('icon', newMarker.icon)
+        formData.append('description', newMarker.description)
+        formData.append('img', JSON.stringify(newMarker.img))
+        formData.append('position', JSON.stringify(newMarker.position))
+        formData.append('color', newMarker.color)
+        formData.append('location', newMarker.location)
+
+        try {
+            const response = await fetch('http://localhost:3001/markers', {
+                method: 'POST',
+                body: formData,
+                'Content-Type':
+                    'multipart/form-data; boundary=' + formData._boundary,
+            })
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`)
             }
-        },
-        addMarker: (state, action) => {
-            state.push(action.payload)
-        },
-        deleteMarker: (state, action) => {
-            const { id } = action.payload
-            return state.filter((marker) => marker.id !== id)
-        },
+
+            const responseData = await response.json()
+            return responseData
+        } catch (error) {
+            console.error('Error processing request:', error)
+            throw error
+        }
+    }
+)
+
+export const updateMarker = createAsyncThunk(
+    'markers/updateMarker',
+    async (marker) => {
+        console.log(marker)
+        const formData = new FormData()
+
+        // for (let index = 0; index < marker.images.length; index++) {
+        //     const img = marker.images[index]
+
+        //     if (!img.file) {
+        //         break
+        //     }
+
+        //     formData.append(`image[${index}]`, img.file, img.file.name)
+        // }
+
+        // formData.append('images', marker.images)
+
+        marker.images.forEach((img, index) => {
+            formData.append(`image[${index}]`, img.file, img.file.name)
+        })
+
+        // Добавляем данные в FormData
+        formData.append('id', marker.id)
+        formData.append('name', marker.name)
+        formData.append('description', marker.description)
+        formData.append('img', JSON.stringify(marker.img))
+        formData.append('location', marker.location)
+
+        try {
+            const response = await fetch('http://localhost:3001/markers', {
+                method: 'PUT',
+                body: formData,
+                'Content-Type':
+                    'multipart/form-data; boundary=' + formData._boundary,
+            })
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`)
+            }
+
+            const responseData = await response.json()
+            return responseData
+        } catch (error) {
+            console.error('Error processing request:', error)
+            throw error
+        }
+    }
+)
+
+export const deleteMarker = createAsyncThunk(
+    'markers/deleteMarker',
+    async (marker) => {
+        const response = await axios.delete(
+            `http://localhost:3001/markers/${marker.id}/${marker.location}`
+        )
+        return response.data
+    }
+)
+
+export const markersSlice = createSlice({
+    name: 'marker',
+    initialState: {
+        markers: [],
+        status: 'idle',
+        error: null,
+    },
+    reducers: {
+        // updateMarker: (state, action) => {
+        //     const { id, name, description, img } = action.payload
+        //     const existingMarker = state.markers.find(
+        //         (marker) => marker.id === id
+        //     )
+        //     if (existingMarker) {
+        //         existingMarker.name = name
+        //         existingMarker.description = description
+        //         existingMarker.img = img
+        //     }
+        // },
+    },
+    extraReducers(builder) {
+        builder
+            // Получение маркеров
+            .addCase(fetchMarkers.pending, (state, action) => {
+                state.status = 'loading'
+            })
+            .addCase(fetchMarkers.fulfilled, (state, action) => {
+                state.status = 'succeeded'
+
+                state.markers = state.markers.concat(action.payload)
+            })
+            .addCase(fetchMarkers.rejected, (state, action) => {
+                state.status = 'failed'
+
+                state.error = action.error.message
+            })
+            // Добавление маркера
+            .addCase(addNewMarker.fulfilled, (state, action) => {
+                state.markers.push(action.payload.newMarker)
+            })
+            // Обновление маркера
+            .addCase(updateMarker.pending, (state, action) => {
+                state.status = 'loading'
+            })
+            .addCase(updateMarker.fulfilled, (state, action) => {
+                state.status = 'idle'
+                const { id, name, description, img } = action.payload.marker
+                const existingMarker = state.markers.find(
+                    (marker) => marker.id === id
+                )
+                if (existingMarker) {
+                    existingMarker.name = name
+                    existingMarker.description = description
+                    existingMarker.img = img
+                }
+            })
+            // Удаление маркера
+            .addCase(deleteMarker.pending, (state, action) => {
+                state.status = 'loading'
+            })
+            .addCase(deleteMarker.fulfilled, (state, action) => {
+                state.status = 'succeeded'
+                console.log(action.payload)
+                state.markers = state.markers.filter(
+                    (marker) => marker.id !== action.payload.marker.id
+                )
+            })
     },
 })
 
-export const { updateMarker, addMarker, deleteMarker } = counterSlice.actions
+// export const {} = markersSlice.actions
 
-export const selectAllMarkers = (state) => state.marker
+export const selectAllMarkers = (state) => state.marker.markers
 
-export default counterSlice.reducer
+export default markersSlice.reducer

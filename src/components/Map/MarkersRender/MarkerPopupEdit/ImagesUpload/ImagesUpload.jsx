@@ -4,8 +4,6 @@ import { MDBContainer, MDBBtn } from 'mdb-react-ui-kit'
 const ImagesUpload = ({ images, setImages }) => {
     const maxNumber = 69
     const onChange = (imageList, addUpdateIndex) => {
-        // data for submit
-
         setImages(
             imageList.map((img, index) => {
                 let name
@@ -24,11 +22,14 @@ const ImagesUpload = ({ images, setImages }) => {
                     name = img.name
                 }
 
-                return { data_url: img.data_url, name: name }
+                return {
+                    data_url: img.data_url,
+                    name: name,
+                    file: img.file,
+                }
             })
         )
     }
-
     return (
         <MDBContainer>
             <ImageUploading

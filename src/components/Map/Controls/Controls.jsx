@@ -10,17 +10,15 @@ import {
 import L from 'leaflet'
 import { useDispatch } from 'react-redux'
 import uuid from 'react-uuid'
-import axios from 'axios'
 
-import NewMarker from './NewMarker'
-import ImagesUpload from './ImagesUpload'
-import { addMarker } from '../features/marker/markerSlice'
-import MarkerIcon from './MarkerIcon'
-import MarkerColorOptions from './MarkerColorOptions'
+import NewMarker from './NewMarker/NewMarker'
+import ImagesUpload from '../MarkersRender/MarkerPopupEdit/ImagesUpload/ImagesUpload'
+import { addNewMarker } from '../../../features/marker/markerSlice'
+import MarkerIcon from './MarkerIcon/MarkerIcon'
+import MarkerColorOptions from './MarkerColorOptions/MarkerColorOptions'
 
-const Controls = ({ mapEdit, handleSwitchChange, admin }) => {
+const Controls = ({ mapEdit, handleSwitchChange, location }) => {
     const containerRef = useRef(null)
-    const fileInputRef = useRef(null)
     const dispatch = useDispatch()
 
     useEffect(() => {
@@ -39,9 +37,10 @@ const Controls = ({ mapEdit, handleSwitchChange, admin }) => {
     const [imageError, setImageError] = useState(true)
     const [newMarkerIcon, setNewMarkerIcon] = useState('location_on_black_24dp')
     const [color, setColor] = useState('black')
+    const [addRequestStatus, setAddRequestStatus] = useState('idle')
 
     //Add marker handle function
-    const handleAddMarker = (event) => {
+    const handleAddMarker = async (event) => {
         event.preventDefault()
         setValidated(true)
 
@@ -63,21 +62,27 @@ const Controls = ({ mapEdit, handleSwitchChange, admin }) => {
             icon: newMarkerIcon,
             description: newMarkerDescription,
             img: newMarkerImage.map((img) => `images/${img.name}`),
+            images: newMarkerImage,
             position: newPosition,
+            color: color,
+            location: location,
         }
 
-        dispatch(addMarker(newMarker))
+        try {
+            setAddRequestStatus('pending')
+            await dispatch(addNewMarker(newMarker)).unwrap()
 
-        setNewMarkerName('')
-        setNewMarkerDescription('')
-        setNewMarkerImage(null)
-        setNewMarkerIcon('map-pin')
-        setNewPosition(null)
-        setValidated(false)
-        setError('')
-
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ''
+            setNewMarkerName('')
+            setNewMarkerDescription('')
+            setNewMarkerImage(null)
+            setNewMarkerIcon('location_on_black_24dp')
+            setNewPosition(null)
+            setValidated(false)
+            setError('')
+        } catch (error) {
+            console.error('Failed to save marker: ', error)
+        } finally {
+            setAddRequestStatus('idle')
         }
     }
 
@@ -96,23 +101,6 @@ const Controls = ({ mapEdit, handleSwitchChange, admin }) => {
             setImageError(false)
         }
     }, [newMarkerImage])
-
-    useEffect(() => {
-        const fetchMarkers = async () => {
-            try {
-                const response = await axios.get(
-                    'http://localhost:3001/markers'
-                ) // Поменяйте URL на ваш сервер
-
-                // Данные приходят в response.data
-                console.log(response.data)
-            } catch (error) {
-                console.error('Ошибка при получении маркеров:', error)
-            }
-        }
-
-        fetchMarkers()
-    }, [])
 
     return (
         <div>
@@ -260,6 +248,10 @@ const Controls = ({ mapEdit, handleSwitchChange, admin }) => {
                                             variant="primary"
                                             type="submit"
                                             className="mb-3"
+                                            disabled={
+                                                addRequestStatus ===
+                                                    'pending' && false
+                                            }
                                         >
                                             Добавить маркер
                                         </Button>

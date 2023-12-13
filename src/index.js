@@ -6,7 +6,7 @@ import { Provider } from 'react-redux'
 import store from './app/store'
 import Root from './routes/root'
 import ErrorPage from './error-page'
-import KrasnoeBedstvieMap from './KrasnoeBedstvieMap'
+import KrasnoeBedstvie from './KrasnoeBedstvie'
 import Vzvod from './Vzvod'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -22,7 +22,7 @@ const router = createBrowserRouter([
         children: [
             {
                 path: 'krasnoe-bedstvie',
-                element: <KrasnoeBedstvieMap />,
+                element: <KrasnoeBedstvie />,
             },
             {
                 path: 'vzvod',

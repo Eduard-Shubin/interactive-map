@@ -10,11 +10,14 @@ import {
 } from 'mdb-react-ui-kit'
 import uuid from 'react-uuid'
 import { useDispatch } from 'react-redux'
-import ImagesUpload from './ImagesUpload'
+import ImagesUpload from './ImagesUpload/ImagesUpload'
 
-import { updateMarker, deleteMarker } from '../features/marker/markerSlice'
+import {
+    updateMarker,
+    deleteMarker,
+} from '../../../../features/marker/markerSlice'
 
-const MarkerPopupEdit = ({ marker }) => {
+const MarkerPopupEdit = ({ marker, location }) => {
     const [isEditing, setIsEditing] = useState(false)
     const [editName, setEditName] = useState('')
     const [editDescription, setEditDescription] = useState('')
@@ -41,23 +44,23 @@ const MarkerPopupEdit = ({ marker }) => {
     }
 
     const handleSaveClick = () => {
-        const images = editImage.map((img) => {
-            return `images/${img.name}`
-        })
-        console.log(images)
         dispatch(
             updateMarker({
                 id: marker.id,
                 name: editName,
                 description: editDescription,
-                img: images,
+                img: editImage.map((img) => `images/${img.name}`),
+                images: editImage.filter((imageFile) => {
+                    return imageFile.file
+                }),
+                location,
             })
-        )
+        ).unwrap()
         handleCancelClick()
     }
 
     const handleDeleteClick = () => {
-        dispatch(deleteMarker({ id: marker.id }))
+        dispatch(deleteMarker({ id: marker.id, location })).unwrap()
     }
 
     return (
