@@ -55,20 +55,7 @@ export const addNewMarker = createAsyncThunk(
 export const updateMarker = createAsyncThunk(
     'markers/updateMarker',
     async (marker) => {
-        console.log(marker)
         const formData = new FormData()
-
-        // for (let index = 0; index < marker.images.length; index++) {
-        //     const img = marker.images[index]
-
-        //     if (!img.file) {
-        //         break
-        //     }
-
-        //     formData.append(`image[${index}]`, img.file, img.file.name)
-        // }
-
-        // formData.append('images', marker.images)
 
         marker.images.forEach((img, index) => {
             formData.append(`image[${index}]`, img.file, img.file.name)
@@ -119,19 +106,7 @@ export const markersSlice = createSlice({
         status: 'idle',
         error: null,
     },
-    reducers: {
-        // updateMarker: (state, action) => {
-        //     const { id, name, description, img } = action.payload
-        //     const existingMarker = state.markers.find(
-        //         (marker) => marker.id === id
-        //     )
-        //     if (existingMarker) {
-        //         existingMarker.name = name
-        //         existingMarker.description = description
-        //         existingMarker.img = img
-        //     }
-        // },
-    },
+    reducers: {},
     extraReducers(builder) {
         builder
             // Получение маркеров
@@ -174,9 +149,9 @@ export const markersSlice = createSlice({
             })
             .addCase(deleteMarker.fulfilled, (state, action) => {
                 state.status = 'succeeded'
-                console.log(action.payload)
+
                 state.markers = state.markers.filter(
-                    (marker) => marker.id !== action.payload.marker.id
+                    (marker) => marker.id !== action.payload.id
                 )
             })
     },

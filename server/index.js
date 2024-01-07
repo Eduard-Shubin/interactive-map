@@ -1,21 +1,60 @@
 const express = require('express')
-const { MongoClient, ServerApiVersion } = require('mongodb')
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const cors = require('cors')
 const formidable = require('express-formidable')
 const fs = require('fs')
 const path = require('path')
+const session = require('express-session')
+const passport = require('passport')
+const LocalStrategy = require('passport-local').Strategy
+const bcrypt = require('bcrypt')
+const crypto = require('crypto')
+const cookieParser = require('cookie-parser')
+
 const app = express()
 const port = 3001
 
-app.use(cors())
-app.use(express.json({ limit: '10mb' }))
+console.log('---------------------------------------------------------')
 
+// Настройка CORS
+app.use(
+    cors({
+        origin: 'http://localhost:3000', // allow to server to accept request from different origin
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        credentials: true, // allow session cookie from browser to pass through
+    })
+)
+
+// Настройка Formidable
 app.use(
     formidable({
         uploadDir: __dirname + '/tmp', // don't forget the __dirname here
         keepExtensions: true,
     })
 )
+
+const sessionSecret = crypto.randomBytes(32).toString('hex')
+
+app.use(cookieParser())
+// Используем сессии для хранения состояния аутентификации
+app.use(
+    session({
+        name: 'Interactive-map',
+        secret: sessionSecret,
+        resave: true,
+        proxy: true,
+        saveUninitialized: true,
+        cookie: {
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            // secure: true,
+            sameSite: 'Strict',
+        },
+    })
+)
+
+// Инициализация Passport и использование сессий
+app.use(passport.initialize())
+app.use(passport.session())
 
 // Подключение к базе данных
 const url = 'mongodb://localhost:27017'
@@ -54,6 +93,115 @@ client.on('error', (err) => {
 
 // Выбор базы данных
 const db = client.db(dbName)
+
+const usersCollection = 'users'
+
+// Паспортная стратегия для проверки учетных данных
+passport.use(
+    new LocalStrategy(
+        {
+            usernameField: 'username',
+            passwordField: 'password',
+        },
+        async (username, password, done) => {
+            await db
+                .collection(usersCollection)
+                .findOne({ username: username })
+                .then((user, err) => {
+                    if (err) {
+                        return done(null, false, { message: err.message })
+                    }
+
+                    if (!user) {
+                        return done(null, false, {
+                            message: 'Неверное имя пользователя.',
+                        })
+                    }
+                    bcrypt.compare(password, user.password, (err, res) => {
+                        if (res) {
+                            return done(null, user) // Возвращаем пользователя, если пароль совпадает
+                        } else {
+                            return done(null, false, {
+                                message: 'Неверный пароль',
+                            })
+                        }
+                    })
+                })
+        }
+    )
+)
+
+// Сериализация и десериализация пользователя
+passport.serializeUser((user, done) => {
+    try {
+        return done(null, user._id)
+    } catch (err) {
+        console.error(err)
+        return done(err, null)
+    }
+})
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await db
+            .collection(usersCollection)
+            .findOne({ _id: ObjectId.createFromHexString(id) })
+        return done(null, user)
+    } catch (err) {
+        return done(err, null)
+    }
+})
+
+// Маршрут для аутентификации
+app.post('/login', (req, res, next) => {
+    req.body = req.fields
+    passport.authenticate('local', (err, user, info) => {
+        try {
+            if (err) {
+                console.error(err)
+                return next(err)
+            }
+
+            if (!user) {
+                return res.json({
+                    success: false,
+                    message: info.message,
+                })
+            }
+
+            req.logIn(user, (err) => {
+                if (err) {
+                    console.error(err)
+                    return next(err)
+                }
+
+                return res.status(200).json({
+                    success: true,
+                    message: 'Successful login',
+                })
+            })
+        } catch (error) {
+            console.log(error.message)
+        }
+    })(req, res, next)
+})
+
+// Маршрут для проверки состояния аутентификации
+app.get('/check-auth', (req, res) => {
+    res.json({ isAuthenticated: req.isAuthenticated() })
+})
+
+// Маршрут для выхода из системы
+app.post('/logout', (req, res) => {
+    req.logout(function (err) {
+        if (err) {
+            return res
+                .status(500)
+                .json({ success: false, message: 'Error during logout' })
+        }
+        return res.json({ success: true, message: 'Logout successful' })
+    })
+})
 
 // Получение маркеров
 app.get('/markers/*', async (req, res) => {

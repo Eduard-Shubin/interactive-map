@@ -21,7 +21,7 @@ const MarkerIcon = ({ setNewMarkerIcon, newMarkerIcon, color }) => {
                 key={uuid()}
                 src={`images/icons/${icon}.svg`}
                 alt={`${icon}`}
-                className={`img-fluid marker-icon-options  marker-color--${color} ${handleSelectedStyle(
+                className={`img-fluid marker-icon-options marker-color--${color} ${handleSelectedStyle(
                     icon
                 )}`}
                 onClick={() => setNewMarkerIcon(icon)}

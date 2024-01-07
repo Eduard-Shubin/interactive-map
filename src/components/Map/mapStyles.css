@@ -8,11 +8,6 @@
     border: 0 !important;
 }
 
-.marker-icon {
-    filter: invert(95%) sepia(100%) saturate(2015%) hue-rotate(337deg)
-        brightness(100%) contrast(100%);
-}
-
 .marker-icon-options {
     width: 48px;
     cursor: pointer;
@@ -20,8 +15,9 @@
 
 .marker-icon-selected {
     border-radius: 3px;
-    border: 2px solid black;
-    color: black;
+    color: black !important;
+    border: 2px solid;
+    border-color: black !important;
     padding: 2px;
 }
 

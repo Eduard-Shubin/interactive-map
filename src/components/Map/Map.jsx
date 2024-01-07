@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom'
 
 import MarkersRender from './MarkersRender/MarkersRender'
 import Controls from './Controls/Controls'
+import { useAuth } from '../../context/AuthContext'
 
 import 'leaflet/dist/leaflet.css'
 import './mapStyles.css'
@@ -13,7 +14,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'mdb-react-ui-kit/dist/css/mdb.min.css'
 
 const Map = ({ customImage }) => {
-    const admin = true // Temporary variable
+    const { isAdmin } = useAuth()
 
     const [mapEdit, setMapEdit] = useState(true)
     const location = useLocation().pathname.slice(1)
@@ -41,7 +42,7 @@ const Map = ({ customImage }) => {
                 <ImageOverlay url={customImage} bounds={bounds} />
                 <MarkersRender mapEdit={mapEdit} location={location} />
 
-                {admin ? (
+                {isAdmin ? (
                     <Controls
                         mapEdit={mapEdit}
                         handleSwitchChange={handleSwitchChange}
