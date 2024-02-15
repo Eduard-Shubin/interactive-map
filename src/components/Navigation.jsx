@@ -10,11 +10,15 @@ import {
     MDBIcon,
     MDBNavbar,
     MDBNavbarBrand,
+    MDBBtn,
 } from 'mdb-react-ui-kit'
 import { Helmet, HelmetProvider } from 'react-helmet-async'
 
+import { useAuth } from '../context/AuthContext'
+
 const Navigation = () => {
     const [openNav, setOpenNav] = useState(false)
+    const { isAdmin, logout } = useAuth()
 
     return (
         <HelmetProvider>
@@ -91,6 +95,20 @@ const Navigation = () => {
                                             </NavLink>
                                         </MDBNavbarItem>
                                     </MDBNavbarNav>
+                                    {isAdmin && (
+                                        <MDBContainer
+                                            fluid
+                                            className="d-flex w-auto pe-0"
+                                        >
+                                            <MDBBtn
+                                                color="danger"
+                                                size="sm"
+                                                onClick={logout}
+                                            >
+                                                Выйти
+                                            </MDBBtn>
+                                        </MDBContainer>
+                                    )}
                                 </MDBCollapse>
                             </MDBContainer>
                         </MDBNavbar>

@@ -32,10 +32,10 @@ const Controls = ({ mapEdit, handleSwitchChange, location }) => {
     const [newMarkerName, setNewMarkerName] = useState('')
     const [newMarkerDescription, setNewMarkerDescription] = useState('')
     const [newMarkerImage, setNewMarkerImage] = useState(null)
+    const [newMarkerIcon, setNewMarkerIcon] = useState('location_on_black_24dp')
     const [validated, setValidated] = useState(false)
     const [error, setError] = useState('')
     const [imageError, setImageError] = useState(true)
-    const [newMarkerIcon, setNewMarkerIcon] = useState('location_on_black_24dp')
     const [color, setColor] = useState('black')
     const [addRequestStatus, setAddRequestStatus] = useState('idle')
 
@@ -158,7 +158,7 @@ const Controls = ({ mapEdit, handleSwitchChange, location }) => {
                                             <Form.Label>
                                                 Иконка маркера
                                             </Form.Label>
-                                            <MDBContainer className="d-flex justify-content-center">
+                                            <MDBContainer className="d-flex justify-content-center mb-1">
                                                 <MarkerIcon
                                                     setNewMarkerIcon={
                                                         setNewMarkerIcon

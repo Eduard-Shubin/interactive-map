@@ -29,7 +29,6 @@ const MarkersRender = ({ mapEdit, location }) => {
     }, [markerStatus, dispatch, location])
 
     const markerIcon = (icon, color) => {
-        console.log(color)
         return L.icon({
             iconUrl: `images/icons/${icon}.svg`,
             iconSize: [32, 32],
